@@ -1,0 +1,43 @@
+server:
+  port: 9091
+spring:
+  application:
+    name: video-api
+  datasource:
+    url: jdbc:postgresql://localhost:5433/video_api?reWriteBatchedInserts=true&prepareThreshold=5&prepareCacheSize=64
+    database: "video_api"
+    username: postgres
+    password: postgres
+    hikari:
+      schema: public
+  jpa:
+    database: POSTGRESQL
+    show-sql: true
+    open-in-view: false
+    properties:
+      connection:
+        provider_disables_autocommit: true
+        handling_mode: DELAYED_ACQUISITION_AND_RELEASE_AFTER_TRANSACTION
+      hibernate:
+        default_schema: public
+        jdbc:
+          batch_size: 200
+          batch_versioned_data: true
+        query:
+          plan_cache_max_size: 64
+          plan_parameter_metadata_max_size: 64
+        generate_statistics: false
+        enable_lazy_load_no_trans: false
+        connection:
+          release_mode: DELAYED_ACQUISITION_AND_RELEASE_AFTER_TRANSACTION
+          autocommit: false
+        bytecode:
+          use_reflection_optimizer: true
+        order_inserts: true
+        order_updates: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+    hibernate:
+      ddl-auto: create-drop
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl

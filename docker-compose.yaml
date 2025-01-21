@@ -1,0 +1,19 @@
+version: '3.4'
+services:
+  app:
+    build: .
+    ports:
+      - "9090:9090"
+    depends_on:
+      - postgres
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/video_api
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: video_api
+    volumes:
+      - postgres:/var/lib/postgresql/data
+volumes:
+  postgres:

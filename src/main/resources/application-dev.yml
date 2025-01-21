@@ -1,0 +1,5 @@
+spring:
+
+application:
+  cognito:
+    userPoolId: us-east-1_cGBlLjpZP
