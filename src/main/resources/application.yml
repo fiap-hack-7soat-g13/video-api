@@ -1,0 +1,30 @@
+server:
+  port: 9090
+spring:
+  application:
+    name: video-api
+  datasource:
+    url: jdbc:postgresql://localhost:5432/video_api
+    username: postgres
+    password: postgres
+  flyway:
+    enabled: true
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: validate
+  rabbitmq:
+    addresses: amqp://localhost:5672
+    username: guest
+    password: guest
+
+application:
+  queue:
+    videoReceived:
+      name: video_received
+    videoStatusChanged:
+      name: video_status_changed
+  storage:
+    fileSystem:
+      active: true
+      directory: /tmp/video_storage
