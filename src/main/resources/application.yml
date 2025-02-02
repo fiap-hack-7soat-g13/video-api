@@ -17,6 +17,13 @@ spring:
     addresses: amqp://localhost:5672
     username: guest
     password: guest
+    listener:
+      simple:
+        default-requeue-rejected: false
+  servlet:
+    multipart:
+      max-file-size: -1
+      max-request-size: -1
 
 application:
   queue:
@@ -27,4 +34,4 @@ application:
   storage:
     fileSystem:
       active: true
-      directory: /tmp/video_storage
+      directory: ${user.home}/video/storage
