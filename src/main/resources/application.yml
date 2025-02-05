@@ -34,4 +34,5 @@ application:
   storage:
     fileSystem:
       active: true
-      directory: ${user.home}/video/storage
+      videoDirectory: ${user.home}/video_storage/video
+      thumbnailDirectory: ${user.home}/video_storage/thumbnail

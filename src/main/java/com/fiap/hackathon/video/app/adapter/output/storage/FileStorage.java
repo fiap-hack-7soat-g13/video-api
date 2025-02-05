@@ -1,10 +1,15 @@
 package com.fiap.hackathon.video.app.adapter.output.storage;
 
-import com.fiap.hackathon.video.core.domain.Video;
-import org.springframework.web.multipart.MultipartFile;
+import org.springframework.core.io.InputStreamSource;
 
 public interface FileStorage {
 
-    void create(Video video, MultipartFile file);
+    void create(Location location, String name, InputStreamSource source);
+
+    InputStreamSource download(Location location, String name);
+
+    Location getVideoLocation();
+
+    Location getThumbnailLocation();
 
 }

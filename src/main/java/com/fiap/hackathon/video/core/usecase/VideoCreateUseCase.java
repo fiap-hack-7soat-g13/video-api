@@ -31,7 +31,7 @@ public class VideoCreateUseCase {
 
         Video savedVideo = videoGateway.save(video);
 
-        fileStorage.create(savedVideo, file);
+        fileStorage.create(fileStorage.getVideoLocation(), savedVideo.getId().toString(), file);
 
         videoReceivedDispatcher.dispatch(savedVideo);
 
