@@ -8,6 +8,6 @@ import lombok.Getter;
 @AllArgsConstructor
 public class AmazonS3Location implements Location {
 
-    private String bucket;
+    private final String bucket;
 
 }

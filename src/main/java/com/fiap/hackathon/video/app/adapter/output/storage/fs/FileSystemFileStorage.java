@@ -9,6 +9,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.InputStreamSource;
 import org.springframework.stereotype.Component;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -34,7 +35,7 @@ public class FileSystemFileStorage implements FileStorage {
     }
 
     @Override
-    public void create(Location location, String name, InputStreamSource source) {
+    public void create(Location location, String name, MultipartFile source) {
         File target = getPath(location, name).toFile();
         try (InputStream is = source.getInputStream(); OutputStream os = new BufferedOutputStream(new FileOutputStream(target))) {
             IOUtils.copy(is, os);

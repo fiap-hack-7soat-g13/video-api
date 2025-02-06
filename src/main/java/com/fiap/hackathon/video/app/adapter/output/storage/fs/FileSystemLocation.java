@@ -10,6 +10,6 @@ import java.nio.file.Path;
 @AllArgsConstructor
 public class FileSystemLocation implements Location {
 
-    private Path directory;
+    private final Path directory;
 
 }
