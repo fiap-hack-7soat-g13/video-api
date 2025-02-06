@@ -32,6 +32,10 @@ application:
     videoStatusChanged:
       name: video_status_changed
   storage:
+    amazonS3:
+      active: false
+      videoBucket: video-fc4f90cd
+      thumbnailBucket: thumbnail-cd3e1d98
     fileSystem:
       active: true
       videoDirectory: ${user.home}/video_storage/video
