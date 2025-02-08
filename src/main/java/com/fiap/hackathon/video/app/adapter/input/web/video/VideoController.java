@@ -2,6 +2,7 @@ package com.fiap.hackathon.video.app.adapter.input.web.video;
 
 import com.fiap.hackathon.video.app.adapter.input.web.video.dto.VideoResponse;
 import com.fiap.hackathon.video.app.adapter.input.web.video.mapper.VideoResponseMapper;
+import com.fiap.hackathon.video.core.domain.User;
 import com.fiap.hackathon.video.core.domain.Video;
 import com.fiap.hackathon.video.core.usecase.ThumbnailDownloadUseCase;
 import com.fiap.hackathon.video.core.usecase.VideoCreateUseCase;
@@ -13,6 +14,8 @@ import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -30,28 +33,50 @@ public class VideoController {
 
     @PostMapping
     public VideoResponse create(@RequestParam MultipartFile file) {
-        Video video = videoCreateUseCase.execute(file);
-        return videoResponseMapper.toVideoResponse(video);
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication.isAuthenticated()) {
+            User u = (User) authentication.getPrincipal();
+
+            Video video = videoCreateUseCase.execute(file);
+            return videoResponseMapper.toVideoResponse(video);
+        } else {
+            throw new RuntimeException("Usuário não autenticado");
+        }
     }
 
     @GetMapping("/{id}")
     public VideoResponse get(@PathVariable Long id) {
-        Video video = videoGetUseCase.execute(id);
-        return videoResponseMapper.toVideoResponse(video);
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication.isAuthenticated()) {
+            Video video = videoGetUseCase.execute(id);
+            return videoResponseMapper.toVideoResponse(video);
+        } else {
+            throw new RuntimeException("Usuário não autenticado");
+        }
     }
 
     @GetMapping
     public List<VideoResponse> list() {
-        List<Video> videos = videoListUseCase.execute();
-        return videos.stream().map(videoResponseMapper::toVideoResponse).toList();
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication.isAuthenticated()) {
+            List<Video> videos = videoListUseCase.execute();
+            return videos.stream().map(videoResponseMapper::toVideoResponse).toList();
+        } else {
+            throw new RuntimeException("Usuário não autenticado");
+        }
     }
 
     @GetMapping("/{id}/thumbnail")
     public ResponseEntity<InputStreamSource> thumbnailDownload(@PathVariable Long id) {
-        return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, ContentDisposition.attachment().filename("thumbnail.zip").build().toString())
-                .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                .body(thumbnailDownloadUseCase.execute(id));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication.isAuthenticated()) {
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, ContentDisposition.attachment().filename("thumbnail.zip").build().toString())
+                    .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                    .body(thumbnailDownloadUseCase.execute(id));
+        } else {
+            throw new RuntimeException("Usuário não autenticado");
+        }
     }
 
 }
