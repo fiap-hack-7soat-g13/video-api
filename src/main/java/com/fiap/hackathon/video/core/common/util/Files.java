@@ -2,7 +2,6 @@ package com.fiap.hackathon.video.core.common.util;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
@@ -23,9 +22,12 @@ public class Files {
         }
     }
 
-    @SneakyThrows
     public static Path createTempFile() {
-        return java.nio.file.Files.createTempFile(null, null);
+        try {
+            return java.nio.file.Files.createTempFile(null, null);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public static void deleteQuietly(Path path) {
