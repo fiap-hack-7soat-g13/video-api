@@ -9,12 +9,12 @@ import java.util.UUID;
 
 @Service
 @AllArgsConstructor
-public class VideoGenerateUploadLinkUseCase {
+public class VideoGenerateUploadUrlUseCase {
 
     private final FileStorage fileStorage;
 
     public String execute(UUID identifier) {
-        return fileStorage.generateUploadLink(Location.UPLOAD, identifier.toString());
+        return fileStorage.generateUploadUrl(Location.UPLOAD, identifier.toString());
     }
 
 }

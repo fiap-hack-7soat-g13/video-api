@@ -8,7 +8,6 @@ import com.fiap.hackathon.video.core.domain.Video;
 import com.fiap.hackathon.video.core.usecase.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.core.io.InputStreamSource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -19,13 +18,14 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.net.URI;
 import java.util.List;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class VideoControllerTest {
 
-	private VideoGenerateUploadLinkUseCase videoGenerateUploadLinkUseCase;
+	private VideoGenerateUploadUrlUseCase videoGenerateUploadLinkUseCase;
 	private VideoCreateUseCase videoCreateUseCase;
 	private VideoGetUseCase videoGetUseCase;
 	private VideoListUseCase videoListUseCase;
@@ -37,7 +37,7 @@ class VideoControllerTest {
 
 	@BeforeEach
 	void setUp() {
-		videoGenerateUploadLinkUseCase = mock(VideoGenerateUploadLinkUseCase.class);
+		videoGenerateUploadLinkUseCase = mock(VideoGenerateUploadUrlUseCase.class);
 		videoCreateUseCase = mock(VideoCreateUseCase.class);
 		videoGetUseCase = mock(VideoGetUseCase.class);
 		videoListUseCase = mock(VideoListUseCase.class);
@@ -51,7 +51,7 @@ class VideoControllerTest {
 
 	@Test
 	void create_shouldReturnVideoResponseWhenAuthenticated() {
-		MultipartFile file = mock(MultipartFile.class);
+		UUID identifier = UUID.randomUUID();
 		User user = User.builder().build();
 		Video video = new Video();
 		VideoResponse videoResponse = new VideoResponse();
@@ -59,10 +59,10 @@ class VideoControllerTest {
 		when(securityContext.getAuthentication()).thenReturn(authentication);
 		when(authentication.isAuthenticated()).thenReturn(true);
 		when(authentication.getPrincipal()).thenReturn(user);
-		when(videoCreateUseCase.execute(file, user)).thenReturn(video);
+		when(videoCreateUseCase.execute(identifier, user)).thenReturn(video);
 		when(videoResponseMapper.toVideoResponse(video)).thenReturn(videoResponse);
 
-		VideoResponse response = videoController.create(file);
+		VideoResponse response = videoController.create(identifier);
 
 		assertNotNull(response);
 		assertEquals(videoResponse, response);
@@ -70,12 +70,12 @@ class VideoControllerTest {
 
 	@Test
 	void create_shouldThrowUnauthorizedUserExceptionWhenNotAuthenticated() {
-		MultipartFile file = mock(MultipartFile.class);
+		UUID identifier = UUID.randomUUID();
 
 		when(securityContext.getAuthentication()).thenReturn(authentication);
 		when(authentication.isAuthenticated()).thenReturn(false);
 
-		assertThrows(UnauthorizedUserException.class, () -> videoController.create(file));
+		assertThrows(UnauthorizedUserException.class, () -> videoController.create(identifier));
 	}
 
 	@Test

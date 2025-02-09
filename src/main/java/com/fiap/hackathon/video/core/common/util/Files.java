@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 @Slf4j
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -22,9 +23,37 @@ public class Files {
         }
     }
 
+    public static <T> T createTempFileAndExecute(Function<Path, T> function) {
+        Path tempFile = null;
+        try {
+            tempFile = createTempFile();
+            return function.apply(tempFile);
+        } finally {
+            deleteQuietly(tempFile);
+        }
+    }
+
+    public static <T> T createTempDirAndExecute(Function<Path, T> function) {
+        Path tempDir = null;
+        try {
+            tempDir = createTempDir();
+            return function.apply(tempDir);
+        } finally {
+            deleteQuietly(tempDir);
+        }
+    }
+
     public static Path createTempFile() {
         try {
             return java.nio.file.Files.createTempFile(null, null);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static Path createTempDir() {
+        try {
+            return java.nio.file.Files.createTempDirectory(null);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

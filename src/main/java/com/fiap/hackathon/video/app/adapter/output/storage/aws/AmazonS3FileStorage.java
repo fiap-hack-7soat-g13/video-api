@@ -10,6 +10,7 @@ import org.springframework.core.io.InputStreamSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.CopyObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
@@ -19,6 +20,7 @@ import software.amazon.awssdk.services.s3.presigner.model.PresignedPutObjectRequ
 import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest;
 
 import java.io.IOException;
+import java.nio.file.Path;
 import java.time.Duration;
 import java.util.Map;
 
@@ -61,6 +63,17 @@ public class AmazonS3FileStorage implements FileStorage {
     }
 
     @Override
+    public void copy(Location sourceLocation, String sourceName, Location targetLocation, String targetName) {
+        CopyObjectRequest copyObjectRequest = CopyObjectRequest.builder()
+                .sourceBucket(getBucket(sourceLocation))
+                .sourceKey(sourceName)
+                .destinationBucket(getBucket(targetLocation))
+                .destinationKey(targetName)
+                .build();
+        s3Client.copyObject(copyObjectRequest);
+    }
+
+    @Override
     public InputStreamSource download(Location location, String name) {
         GetObjectRequest getObjectRequest = GetObjectRequest.builder()
                 .bucket(getBucket(location))
@@ -70,7 +83,16 @@ public class AmazonS3FileStorage implements FileStorage {
     }
 
     @Override
-    public String generateUploadLink(Location location, String name) {
+    public void download(Location location, String name, Path target) {
+        GetObjectRequest getObjectRequest = GetObjectRequest.builder()
+                .bucket(getBucket(location))
+                .key(name)
+                .build();
+        s3Client.getObject(getObjectRequest, target);
+    }
+
+    @Override
+    public String generateUploadUrl(Location location, String name) {
 
         PutObjectRequest putObjectRequest = PutObjectRequest.builder()
                 .bucket(getBucket(location))

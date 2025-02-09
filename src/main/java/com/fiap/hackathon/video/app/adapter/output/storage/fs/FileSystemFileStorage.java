@@ -50,13 +50,34 @@ public class FileSystemFileStorage implements FileStorage {
     }
 
     @Override
+    public void copy(Location sourceLocation, String sourceName, Location targetLocation, String targetName) {
+        Path source = getPath(sourceLocation, sourceName);
+        Path target = getPath(targetLocation, targetName);
+        try {
+            Files.copy(source, target);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
     public InputStreamSource download(Location location, String name) {
         Path source = getPath(location, name);
         return new FileSystemResource(source);
     }
 
     @Override
-    public String generateUploadLink(Location location, String name) {
+    public void download(Location location, String name, Path target) {
+        try {
+            Path source = getPath(location, name);
+            Files.copy(source, target);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public String generateUploadUrl(Location location, String name) {
         return null;
     }
 
