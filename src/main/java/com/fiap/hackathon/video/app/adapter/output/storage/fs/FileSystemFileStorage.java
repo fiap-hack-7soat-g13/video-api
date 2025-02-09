@@ -14,24 +14,29 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Map;
 
 @Component
 @ConditionalOnProperty(name = "application.storage.fileSystem.active", havingValue = "true")
 public class FileSystemFileStorage implements FileStorage {
 
-    private final FileSystemLocation videoLocation;
-    private final FileSystemLocation thumbnailLocation;
+    private final Map<Location, Path> locations;
 
-    public FileSystemFileStorage(@Value("${application.storage.fileSystem.videoDirectory}") String videoDirectory,
+    public FileSystemFileStorage(@Value("${application.storage.fileSystem.uploadDirectory}") String uploadDirectory,
+                                 @Value("${application.storage.fileSystem.videoDirectory}") String videoDirectory,
                                  @Value("${application.storage.fileSystem.thumbnailDirectory}") String thumbnailDirectory) {
-        this.videoLocation = new FileSystemLocation(Path.of(videoDirectory));
-        this.thumbnailLocation = new FileSystemLocation(Path.of(thumbnailDirectory));
+        this.locations = Map.of(
+                Location.UPLOAD, Path.of(uploadDirectory),
+                Location.VIDEO, Path.of(videoDirectory),
+                Location.THUMBNAIL, Path.of(thumbnailDirectory)
+        );
     }
 
     @PostConstruct
     public void post() throws IOException {
-        Files.createDirectories(videoLocation.getDirectory());
-        Files.createDirectories(thumbnailLocation.getDirectory());
+        for (Path path : locations.values()) {
+            Files.createDirectories(path);
+        }
     }
 
     @Override
@@ -51,22 +56,17 @@ public class FileSystemFileStorage implements FileStorage {
     }
 
     @Override
-    public String generateDownloadLink(Location location, String name) {
+    public String generateUploadLink(Location location, String name) {
         return null;
     }
 
     @Override
-    public Location getVideoLocation() {
-        return this.videoLocation;
-    }
-
-    @Override
-    public Location getThumbnailLocation() {
-        return this.thumbnailLocation;
+    public String generateDownloadLink(Location location, String name) {
+        return null;
     }
 
     private Path getPath(Location location, String name) {
-        return ((FileSystemLocation) location).getDirectory().resolve(name);
+        return locations.get(location).resolve(name);
     }
 
 }

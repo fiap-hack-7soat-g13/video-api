@@ -5,14 +5,16 @@ import com.fiap.hackathon.video.app.adapter.output.storage.Location;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.UUID;
+
 @Service
 @AllArgsConstructor
-public class ThumbnailDownloadUseCase {
+public class VideoGenerateUploadLinkUseCase {
 
     private final FileStorage fileStorage;
 
-    public String execute(Long id) {
-        return fileStorage.generateDownloadLink(Location.THUMBNAIL, id.toString());
+    public String execute(UUID identifier) {
+        return fileStorage.generateUploadLink(Location.UPLOAD, identifier.toString());
     }
 
 }

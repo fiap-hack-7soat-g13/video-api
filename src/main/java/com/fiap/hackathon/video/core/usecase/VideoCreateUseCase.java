@@ -2,6 +2,7 @@ package com.fiap.hackathon.video.core.usecase;
 
 import com.fiap.hackathon.video.app.adapter.output.queue.VideoReceivedDispatcher;
 import com.fiap.hackathon.video.app.adapter.output.storage.FileStorage;
+import com.fiap.hackathon.video.app.adapter.output.storage.Location;
 import com.fiap.hackathon.video.core.domain.User;
 import com.fiap.hackathon.video.core.domain.Video;
 import com.fiap.hackathon.video.core.domain.VideoStatus;
@@ -34,7 +35,7 @@ public class VideoCreateUseCase {
 
         Video savedVideo = videoGateway.save(video);
 
-        fileStorage.create(fileStorage.getVideoLocation(), savedVideo.getId().toString(), file);
+        fileStorage.create(Location.VIDEO, savedVideo.getId().toString(), file);
 
         videoReceivedDispatcher.dispatch(savedVideo);
 

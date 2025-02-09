@@ -15,9 +15,12 @@ import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
 import software.amazon.awssdk.services.s3.presigner.model.PresignedGetObjectRequest;
+import software.amazon.awssdk.services.s3.presigner.model.PresignedPutObjectRequest;
+import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest;
 
 import java.io.IOException;
 import java.time.Duration;
+import java.util.Map;
 
 @Component
 @ConditionalOnProperty(name = "application.storage.amazonS3.active", havingValue = "true")
@@ -25,17 +28,20 @@ public class AmazonS3FileStorage implements FileStorage {
 
     private final S3Client s3Client;
     private final S3Presigner s3Presigner;
-    private final AmazonS3Location videoLocation;
-    private final AmazonS3Location thumbnailLocation;
+    private final Map<Location, String> locations;
 
     public AmazonS3FileStorage(S3Client s3Client,
                                S3Presigner s3Presigner,
+                               @Value("${application.storage.amazonS3.uploadBucket}") String uploadBucket,
                                @Value("${application.storage.amazonS3.videoBucket}") String videoBucket,
                                @Value("${application.storage.amazonS3.thumbnailBucket}") String thumbnailBucket) {
         this.s3Client = s3Client;
         this.s3Presigner = s3Presigner;
-        this.videoLocation = new AmazonS3Location(videoBucket);
-        this.thumbnailLocation = new AmazonS3Location(thumbnailBucket);
+        this.locations = Map.of(
+                Location.UPLOAD, uploadBucket,
+                Location.VIDEO, videoBucket,
+                Location.THUMBNAIL, thumbnailBucket
+        );
     }
 
     @Override
@@ -64,6 +70,24 @@ public class AmazonS3FileStorage implements FileStorage {
     }
 
     @Override
+    public String generateUploadLink(Location location, String name) {
+
+        PutObjectRequest putObjectRequest = PutObjectRequest.builder()
+                .bucket(getBucket(location))
+                .key(name)
+                .build();
+
+        PutObjectPresignRequest putObjectPresignRequest = PutObjectPresignRequest.builder()
+                .signatureDuration(Duration.ofMinutes(10))
+                .putObjectRequest(putObjectRequest)
+                .build();
+
+        PresignedPutObjectRequest presignedPutObjectRequest = s3Presigner.presignPutObject(putObjectPresignRequest);
+
+        return presignedPutObjectRequest.url().toString();
+    }
+
+    @Override
     public String generateDownloadLink(Location location, String name) {
 
         GetObjectRequest getObjectRequest = GetObjectRequest.builder()
@@ -81,18 +105,8 @@ public class AmazonS3FileStorage implements FileStorage {
         return presignedGetObjectRequest.url().toString();
     }
 
-    @Override
-    public Location getVideoLocation() {
-        return videoLocation;
-    }
-
-    @Override
-    public Location getThumbnailLocation() {
-        return thumbnailLocation;
-    }
-
     private String getBucket(Location location) {
-        return ((AmazonS3Location) location).getBucket();
+        return locations.get(location);
     }
 
 }

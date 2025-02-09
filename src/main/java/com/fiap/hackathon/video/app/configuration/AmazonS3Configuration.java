@@ -26,8 +26,10 @@ public class AmazonS3Configuration {
     }
 
     @Bean
-    public S3Presigner s3Presigner() {
-        return S3Presigner.builder().build();
+    public S3Presigner s3Presigner(S3Client s3Client) {
+        return S3Presigner.builder()
+                .s3Client(s3Client)
+                .build();
     }
 
 }
