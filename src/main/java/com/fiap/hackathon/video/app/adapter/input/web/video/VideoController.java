@@ -5,10 +5,7 @@ import com.fiap.hackathon.video.app.adapter.input.web.video.mapper.VideoResponse
 import com.fiap.hackathon.video.core.common.exception.NotFoundException;
 import com.fiap.hackathon.video.core.domain.User;
 import com.fiap.hackathon.video.core.domain.Video;
-import com.fiap.hackathon.video.core.usecase.ThumbnailDownloadUseCase;
-import com.fiap.hackathon.video.core.usecase.VideoCreateUseCase;
-import com.fiap.hackathon.video.core.usecase.VideoGetUseCase;
-import com.fiap.hackathon.video.core.usecase.VideoListUseCase;
+import com.fiap.hackathon.video.core.usecase.*;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,16 +18,25 @@ import org.springframework.web.multipart.MultipartFile;
 import java.net.URI;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 
 @RestController
 @AllArgsConstructor
 public class VideoController {
 
+    private final VideoGenerateUploadLinkUseCase videoGenerateUploadLinkUseCase;
     private final VideoCreateUseCase videoCreateUseCase;
     private final VideoGetUseCase videoGetUseCase;
     private final VideoListUseCase videoListUseCase;
     private final ThumbnailDownloadUseCase thumbnailDownloadUseCase;
     private final VideoResponseMapper videoResponseMapper;
+
+    @PutMapping
+    public ResponseEntity<Void> generateUploadLink() {
+        UUID identifier = UUID.randomUUID();
+        String uri = videoGenerateUploadLinkUseCase.execute(identifier);
+        return ResponseEntity.status(HttpStatus.TEMPORARY_REDIRECT).location(URI.create(uri)).build();
+    }
 
     @PostMapping
     public VideoResponse create(@RequestParam MultipartFile file) {

@@ -20,26 +20,26 @@ import static org.mockito.Mockito.when;
 class FileSystemFileStorageTest {
 
 	private FileSystemFileStorage fileSystemFileStorage;
+	private final Path uploadDirectory = Path.of("upload-directory");
 	private final Path videoDirectory = Path.of("video-directory");
 	private final Path thumbnailDirectory = Path.of("thumbnail-directory");
 
 	@BeforeEach
 	void setUp() throws IOException {
-		fileSystemFileStorage = new FileSystemFileStorage(videoDirectory.toString(), thumbnailDirectory.toString());
+		fileSystemFileStorage = new FileSystemFileStorage(uploadDirectory.toString(), videoDirectory.toString(), thumbnailDirectory.toString());
 		Files.createDirectories(videoDirectory);
 		Files.createDirectories(thumbnailDirectory);
 	}
 
 	@Test
 	void create_shouldUploadFileToFileSystem() throws IOException {
-		Location location = fileSystemFileStorage.getVideoLocation();
 		String name = "test-video.mp4";
 		MultipartFile source = mock(MultipartFile.class);
 		File tempFile = File.createTempFile("test", "tmp");
 
 		when(source.getInputStream()).thenReturn(new FileInputStream(tempFile));
 
-		fileSystemFileStorage.create(location, name, source);
+		fileSystemFileStorage.create(Location.VIDEO, name, source);
 
 		Path targetPath = videoDirectory.resolve(name);
 		assertTrue(Files.exists(targetPath));
@@ -47,40 +47,23 @@ class FileSystemFileStorageTest {
 
 	@Test
 	void create_shouldThrowRuntimeExceptionOnIOException() throws IOException {
-		Location location = fileSystemFileStorage.getVideoLocation();
 		String name = "test-video.mp4";
 		MultipartFile source = mock(MultipartFile.class);
 
 		when(source.getInputStream()).thenThrow(new IOException());
 
-		assertThrows(RuntimeException.class, () -> fileSystemFileStorage.create(location, name, source));
+		assertThrows(RuntimeException.class, () -> fileSystemFileStorage.create(Location.VIDEO, name, source));
 	}
 
 	@Test
 	void download_shouldReturnInputStreamSource() {
-		Location location = fileSystemFileStorage.getVideoLocation();
 		String name = "test-video.mp4";
 		Path sourcePath = videoDirectory.resolve(name);
 
-		InputStreamSource result = fileSystemFileStorage.download(location, name);
+		InputStreamSource result = fileSystemFileStorage.download(Location.VIDEO, name);
 
 		assertNotNull(result);
 		assertEquals(sourcePath, ((FileSystemResource) result).getFile().toPath());
 	}
 
-	@Test
-	void getVideoLocation_shouldReturnVideoLocation() {
-		Location result = fileSystemFileStorage.getVideoLocation();
-
-		assertNotNull(result);
-		assertEquals(videoDirectory, ((FileSystemLocation) result).getDirectory());
-	}
-
-	@Test
-	void getThumbnailLocation_shouldReturnThumbnailLocation() {
-		Location result = fileSystemFileStorage.getThumbnailLocation();
-
-		assertNotNull(result);
-		assertEquals(thumbnailDirectory, ((FileSystemLocation) result).getDirectory());
-	}
 }

@@ -9,10 +9,8 @@ public interface FileStorage {
 
     InputStreamSource download(Location location, String name);
 
+    String generateUploadLink(Location location, String name);
+
     String generateDownloadLink(Location location, String name);
-
-    Location getVideoLocation();
-
-    Location getThumbnailLocation();
 
 }

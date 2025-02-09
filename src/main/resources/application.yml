@@ -36,10 +36,12 @@ application:
   storage:
     amazonS3:
       active: false
+      uploadBucket: upload-a6475d91
       videoBucket: video-fc4f90cd
       thumbnailBucket: thumbnail-cd3e1d98
     fileSystem:
       active: true
+      uploadDirectory: ${user.home}/video_storage/upload
       videoDirectory: ${user.home}/video_storage/video
       thumbnailDirectory: ${user.home}/video_storage/thumbnail
 
