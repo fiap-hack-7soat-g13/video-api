@@ -1,5 +1,6 @@
 package com.fiap.hackathon.video.app.adapter.input.web.video;
 
+import com.fiap.hackathon.video.app.adapter.input.web.video.dto.CreateVideoRequest;
 import com.fiap.hackathon.video.app.adapter.input.web.video.dto.VideoResponse;
 import com.fiap.hackathon.video.app.adapter.input.web.video.dto.VideoUploadUrlResponse;
 import com.fiap.hackathon.video.app.adapter.input.web.video.mapper.VideoResponseMapper;
@@ -11,7 +12,6 @@ import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.net.URI;
 import java.util.List;
@@ -31,15 +31,15 @@ public class VideoController {
 
     @PutMapping
     public VideoUploadUrlResponse generateUploadUrl() {
-        UUID identifier = UUID.randomUUID();
-        String url = videoGenerateUploadUrlUseCase.execute(identifier);
-        return new VideoUploadUrlResponse(identifier, url);
+        UUID id = UUID.randomUUID();
+        String url = videoGenerateUploadUrlUseCase.execute(id);
+        return new VideoUploadUrlResponse(id, url);
     }
 
-    @PostMapping(path = "/{identifier}")
-    public VideoResponse create(@PathVariable UUID identifier) {
+    @PostMapping
+    public VideoResponse create(@RequestBody CreateVideoRequest request) {
         User user = assertAuthenticatedUser();
-        Video video = videoCreateUseCase.execute(identifier, user);
+        Video video = videoCreateUseCase.execute(request.getUploadId(), request.getFileName(), user);
         return videoResponseMapper.toVideoResponse(video);
     }
 

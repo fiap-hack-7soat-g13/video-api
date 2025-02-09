@@ -12,7 +12,7 @@ public class ThumbnailDownloadUseCase {
     private final FileStorage fileStorage;
 
     public String execute(Long id) {
-        return fileStorage.generateDownloadLink(Location.THUMBNAIL, id.toString());
+        return fileStorage.generateDownloadUrl(Location.THUMBNAIL, id.toString());
     }
 
 }
