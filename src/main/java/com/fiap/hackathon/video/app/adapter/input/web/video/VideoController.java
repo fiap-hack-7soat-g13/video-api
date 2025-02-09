@@ -10,10 +10,7 @@ import com.fiap.hackathon.video.core.usecase.VideoCreateUseCase;
 import com.fiap.hackathon.video.core.usecase.VideoGetUseCase;
 import com.fiap.hackathon.video.core.usecase.VideoListUseCase;
 import lombok.AllArgsConstructor;
-import org.springframework.core.io.InputStreamSource;
-import org.springframework.http.ContentDisposition;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -21,6 +18,7 @@ import org.springframework.security.oauth2.common.exceptions.UnauthorizedUserExc
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.net.URI;
 import java.util.List;
 import java.util.Objects;
 
@@ -36,61 +34,52 @@ public class VideoController {
 
     @PostMapping
     public VideoResponse create(@RequestParam MultipartFile file) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication.isAuthenticated()) {
-            User u = (User) authentication.getPrincipal();
-
-            Video video = videoCreateUseCase.execute(file, u);
-            return videoResponseMapper.toVideoResponse(video);
-        } else {
-            throw new UnauthorizedUserException("Usuário não autenticado");
-        }
+        User user = assertAuthenticatedUser();
+        Video video = videoCreateUseCase.execute(file, user);
+        return videoResponseMapper.toVideoResponse(video);
     }
 
     @GetMapping("/{id}")
     public VideoResponse get(@PathVariable Long id) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication.isAuthenticated()) {
-            User u = (User) authentication.getPrincipal();
-            Video video = videoGetUseCase.execute(id);
-            if (!Objects.equals(video.getCreatedBy(), u.getId()))
-                throw new NotFoundException();
 
-            return videoResponseMapper.toVideoResponse(video);
-        } else {
-            throw new UnauthorizedUserException("Usuário não autenticado");
+        User user = assertAuthenticatedUser();
+        Video video = videoGetUseCase.execute(id);
+
+        if (!Objects.equals(video.getCreatedBy(), user.getId())) {
+            throw new NotFoundException();
         }
+
+        return videoResponseMapper.toVideoResponse(video);
     }
 
     @GetMapping
     public List<VideoResponse> list() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication.isAuthenticated()) {
-            User u = (User) authentication.getPrincipal();
-            List<Video> videos = videoListUseCase.execute(u.getId());
-            return videos.stream().map(videoResponseMapper::toVideoResponse).toList();
-        } else {
-            throw new UnauthorizedUserException("Usuário não autenticado");
-        }
+        User user = assertAuthenticatedUser();
+        List<Video> videos = videoListUseCase.execute(user.getId());
+        return videos.stream().map(videoResponseMapper::toVideoResponse).toList();
     }
 
     @GetMapping("/{id}/thumbnail")
-    public ResponseEntity<InputStreamSource> thumbnailDownload(@PathVariable Long id) {
+    public ResponseEntity<Void> thumbnailDownload(@PathVariable Long id) {
+
+        User user = assertAuthenticatedUser();
+        Video video = videoGetUseCase.execute(id);
+
+        if (!Objects.equals(video.getCreatedBy(), user.getId())) {
+            throw new NotFoundException();
+        }
+
+        String uri = thumbnailDownloadUseCase.execute(id);
+
+        return ResponseEntity.status(HttpStatus.SEE_OTHER).location(URI.create(uri)).build();
+    }
+
+    private User assertAuthenticatedUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication.isAuthenticated()) {
-
-            User u = (User) authentication.getPrincipal();
-            Video video = videoGetUseCase.execute(id);
-            if (!Objects.equals(video.getCreatedBy(), u.getId()))
-                throw new NotFoundException();
-
-            return ResponseEntity.ok()
-                    .header(HttpHeaders.CONTENT_DISPOSITION, ContentDisposition.attachment().filename("thumbnail.zip").build().toString())
-                    .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                    .body(thumbnailDownloadUseCase.execute(id));
-        } else {
+        if (!authentication.isAuthenticated()) {
             throw new UnauthorizedUserException("Usuário não autenticado");
         }
+        return (User) authentication.getPrincipal();
     }
 
 }

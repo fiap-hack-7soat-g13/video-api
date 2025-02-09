@@ -51,6 +51,11 @@ public class FileSystemFileStorage implements FileStorage {
     }
 
     @Override
+    public String generateDownloadLink(Location location, String name) {
+        return null;
+    }
+
+    @Override
     public Location getVideoLocation() {
         return this.videoLocation;
     }

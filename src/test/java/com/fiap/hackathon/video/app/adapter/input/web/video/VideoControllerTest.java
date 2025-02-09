@@ -12,6 +12,7 @@ import com.fiap.hackathon.video.core.usecase.VideoListUseCase;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.core.io.InputStreamSource;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
@@ -19,6 +20,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.common.exceptions.UnauthorizedUserException;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.net.URI;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -154,18 +156,19 @@ class VideoControllerTest {
 		User user = User.builder().id(1L).build();
 		Video video = new Video();
 		video.setCreatedBy(1L);
-		InputStreamSource inputStreamSource = mock(InputStreamSource.class);
+		String link = "link";
 
 		when(securityContext.getAuthentication()).thenReturn(authentication);
 		when(authentication.isAuthenticated()).thenReturn(true);
 		when(authentication.getPrincipal()).thenReturn(user);
 		when(videoGetUseCase.execute(videoId)).thenReturn(video);
-		when(thumbnailDownloadUseCase.execute(videoId)).thenReturn(inputStreamSource);
+		when(thumbnailDownloadUseCase.execute(videoId)).thenReturn(link);
 
-		ResponseEntity<InputStreamSource> response = videoController.thumbnailDownload(videoId);
+		ResponseEntity<Void> response = videoController.thumbnailDownload(videoId);
 
 		assertNotNull(response);
-		assertEquals(inputStreamSource, response.getBody());
+		assertEquals(HttpStatus.SEE_OTHER, response.getStatusCode());
+		assertEquals(URI.create(link), response.getHeaders().getLocation());
 	}
 
 	@Test
