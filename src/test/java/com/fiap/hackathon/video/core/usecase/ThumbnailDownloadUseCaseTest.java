@@ -14,15 +14,19 @@ class ThumbnailDownloadUseCaseTest {
 	private final ThumbnailDownloadUseCase useCase = new ThumbnailDownloadUseCase(fileStorage);
 
 	@Test
-	void execute_shouldReturnInputStreamSourceWhenIdIsValid() {
+	void execute_shouldReturnLinkWhenIdIsValid() {
 		Long id = 1L;
-		InputStreamSource inputStreamSource = mock(InputStreamSource.class);
+		String link = "link";
+		Location location = mock(Location.class);
 
-		when(fileStorage.download(any(Location.class), eq(id.toString()))).thenReturn(inputStreamSource);
+		when(fileStorage.getThumbnailLocation()).thenReturn(location);
+		when(fileStorage.generateDownloadLink(location, id.toString())).thenReturn(link);
 
-		InputStreamSource result = useCase.execute(id);
+		String result = useCase.execute(id);
 
-		verify(fileStorage).download(any(), eq(id.toString()));
+		assertEquals(link, result);
+		verify(fileStorage).getThumbnailLocation();
+		verify(fileStorage).generateDownloadLink(location, id.toString());
 	}
 
 	@Test
@@ -36,9 +40,9 @@ class ThumbnailDownloadUseCaseTest {
 
 		when(fileStorage.download(any(Location.class), eq(id.toString()))).thenReturn(null);
 
-		InputStreamSource result = useCase.execute(id);
+		String result = useCase.execute(id);
 
 		assertNull(result);
-		verify(fileStorage).download(any(), eq(id.toString()));
+		verify(fileStorage).generateDownloadLink(any(), eq(id.toString()));
 	}
 }

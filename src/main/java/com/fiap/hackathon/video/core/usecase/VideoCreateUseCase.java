@@ -30,6 +30,7 @@ public class VideoCreateUseCase {
         video.setStatus(VideoStatus.RECEIVED);
         video.setCreatedAt(LocalDateTime.now());
         video.setCreatedBy(user.getId());
+        video.setCreatedByEmail(user.getEmail());
 
         Video savedVideo = videoGateway.save(video);
 
