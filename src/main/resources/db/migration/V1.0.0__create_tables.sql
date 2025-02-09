@@ -6,5 +6,5 @@ CREATE TABLE "video" (
     created_at TIMESTAMP NOT NULL,
     status VARCHAR NOT NULL,
     created_by BIGSERIAL NOT NULL,
-    created_at VARCHAR NOT NULL
+    created_by_email VARCHAR NOT NULL
 );

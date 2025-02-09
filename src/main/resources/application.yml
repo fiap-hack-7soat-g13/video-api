@@ -6,7 +6,7 @@ spring:
   application:
     name: video-api
   datasource:
-    url: jdbc:postgresql://localhost:543/video_api
+    url: jdbc:postgresql://localhost:5432/video_api
     username: postgres
     password: postgres
   flyway:
