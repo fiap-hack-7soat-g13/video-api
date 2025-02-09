@@ -13,8 +13,8 @@ public class VideoListUseCase {
 
     private final VideoGateway videoGateway;
 
-    public List<Video> execute() {
-        return videoGateway.findAll();
+    public List<Video> execute(Long userId) {
+        return videoGateway.findAll(userId);
     }
 
 }

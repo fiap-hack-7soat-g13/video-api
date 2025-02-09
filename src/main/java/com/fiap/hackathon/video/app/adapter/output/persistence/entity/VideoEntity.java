@@ -28,4 +28,8 @@ public class VideoEntity {
 
     private LocalDateTime createdAt;
 
+    private Long createdBy;
+
+    private String createdByEmail;
+
 }

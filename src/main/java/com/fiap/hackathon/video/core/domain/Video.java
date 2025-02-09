@@ -15,5 +15,7 @@ public class Video {
     private Long size;
     private VideoStatus status;
     private LocalDateTime createdAt;
+    private Long createdBy;
+    private String createdByEmail;
 
 }

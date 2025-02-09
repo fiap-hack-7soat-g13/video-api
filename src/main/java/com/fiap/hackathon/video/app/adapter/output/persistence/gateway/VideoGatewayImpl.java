@@ -36,8 +36,8 @@ public class VideoGatewayImpl implements VideoGateway {
 
     @Override
     @Transactional
-    public List<Video> findAll() {
-        List<VideoEntity> videos = videoRepository.findAll();
+    public List<Video> findAll(Long userId) {
+        List<VideoEntity> videos = videoRepository.findAllByCreatedBy(userId);
         return videos.stream().map(videoEntityMapper::toVideo).toList();
     }
 

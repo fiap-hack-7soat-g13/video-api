@@ -3,11 +3,14 @@ package com.fiap.hackathon.video.common.filter;
 import com.fiap.hackathon.video.core.domain.User;
 import com.fiap.hackathon.video.core.domain.dto.ErrorDto;
 import com.google.gson.Gson;
+import jakarta.servlet.*;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.util.StringUtils;
 import org.springframework.web.server.ServerWebExchange;
@@ -15,8 +18,10 @@ import org.springframework.web.server.WebFilter;
 import org.springframework.web.server.WebFilterChain;
 import reactor.core.publisher.Mono;
 
+import java.io.IOException;
+
 @AllArgsConstructor
-public class CustomGlobalFilter implements WebFilter {
+public class CustomGlobalFilter implements WebFilter, Filter {
 
 	private JwtTokenUtil jwtTokenUtil;
 
@@ -89,4 +94,29 @@ public class CustomGlobalFilter implements WebFilter {
 		return null;
 	}
 
+	@Override
+	public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
+		HttpServletRequest httpRequest = (HttpServletRequest) servletRequest;
+
+		String authHeader = httpRequest.getHeader(HttpHeaders.AUTHORIZATION);
+
+		if (authHeader == null || !authHeader.startsWith(HttpHeaders.AUTHORIZATION)) {
+			filterChain.doFilter(servletRequest, servletResponse);
+			return;
+		}
+
+		var token = this.getToken(authHeader);
+
+		String id = jwtTokenUtil.getIdFromToken(token);
+		String username = jwtTokenUtil.getUsernameFromToken(token);
+		String email = jwtTokenUtil.getEmailFromToken(token);
+
+		UserDetails userDetails = User.builder().id(StringUtils.isEmpty(id) ? null : Long.valueOf(id)).username(username).email(email).build();
+		if (userDetails != null) {
+			UsernamePasswordAuthenticationToken authorization = new UsernamePasswordAuthenticationToken(
+					userDetails, null, userDetails.getAuthorities());
+			SecurityContextHolder.getContext().setAuthentication(authorization);
+		}
+		filterChain.doFilter(servletRequest, servletResponse);
+	}
 }
