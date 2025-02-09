@@ -1,0 +1,10 @@
+{
+  "id": 1,
+  "name": "Nome de Teste",
+  "contentType": "video/mp4",
+  "size": 1024,
+  "videoStatus": "PROCESSING",
+  "createdAt": "2021-08-01T00:00:00",
+  "createdBy": "user",
+  "createdByEmail": "teste@teste.com"
+}

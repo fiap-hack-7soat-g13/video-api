@@ -4,5 +4,7 @@ CREATE TABLE "video" (
     content_type VARCHAR NOT NULL,
     size BIGINT NOT NULL,
     created_at TIMESTAMP NOT NULL,
-    status VARCHAR NOT NULL
+    status VARCHAR NOT NULL,
+    created_by BIGSERIAL NOT NULL,
+    created_by_email VARCHAR NOT NULL
 );

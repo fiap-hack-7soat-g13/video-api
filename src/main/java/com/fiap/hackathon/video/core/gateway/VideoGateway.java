@@ -11,6 +11,6 @@ public interface VideoGateway {
 
     Optional<Video> findById(Long id);
 
-    List<Video> findAll();
+    List<Video> findAll(Long userId);
 
 }
