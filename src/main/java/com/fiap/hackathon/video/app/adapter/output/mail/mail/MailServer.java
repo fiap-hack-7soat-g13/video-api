@@ -1,49 +1,49 @@
 package com.fiap.hackathon.video.app.adapter.output.mail.mail;
 
+import com.fiap.hackathon.video.core.domain.Mail;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
+import lombok.AllArgsConstructor;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
+import org.thymeleaf.spring5.SpringTemplateEngine;
 
-import javax.mail.*;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeMessage;
-import java.util.Properties;
+import java.nio.charset.StandardCharsets;
 
 @Service
+@AllArgsConstructor
 public class MailServer {
 
-	public void sendMail(String email, Long videoId) {
-		Properties props = new Properties();
-		/** Parâmetros de conexão com servidor Gmail */
-		props.put("mail.smtp.host", "smtp.gmail.com");
-		props.put("mail.smtp.socketFactory.port", "465");
-		props.put("mail.smtp.socketFactory.class",
-				"javax.net.ssl.SSLSocketFactory");
-		props.put("mail.smtp.auth", "true");
-		props.put("mail.smtp.port", "465");
+	private static final String EMAIL_TEMPLATE = "email-template";
 
-		Session session = Session.getDefaultInstance(props,
-				new javax.mail.Authenticator() {
-					protected PasswordAuthentication getPasswordAuthentication()
-					{
-						return new PasswordAuthentication("fiaphackathon42@gmail.com",
-								"Fiap321_");
-					}
-				});
+	private JavaMailSender mailSender;
+	private SpringTemplateEngine templateEngine;
 
-		try {
-			Message message = new MimeMessage(session);
-			message.setFrom(new InternetAddress("fiaphackathon42@gmail.com"));
+	public void sendMessage(Mail mail) throws MessagingException {
+		this.mailSender.send(this.buildMimeMessage(mail));
+	}
 
-			Address[] toUser = InternetAddress.parse(email);
+	private MimeMessage buildMimeMessage(Mail mail) throws MessagingException {
+		MimeMessage message = this.mailSender.createMimeMessage();
+		MimeMessageHelper helper = new MimeMessageHelper(message,
+				MimeMessageHelper.MULTIPART_MODE_MIXED_RELATED,
+				StandardCharsets.UTF_8.name());
 
-			message.setRecipients(Message.RecipientType.TO, toUser);
-			message.setSubject("Falha no processamento do vídeo!");
-			message.setText(String.format("O vídeo com id: %s deu problema durante o processamento do mesmo, por favor reenvie o vídeo novamente!", videoId));
+		helper.setTo(mail.getTo());
+		helper.setText(this.getHtmlContent(mail), true);
+		helper.setSubject(mail.getSubject());
+		helper.setFrom(mail.getFrom());
 
-			Transport.send(message);
-			System.out.println("E-mail enviado!!!");
-		} catch (MessagingException e) {
-			throw new RuntimeException(e);
-		}
+		return message;
+	}
+
+	private String getHtmlContent(Mail mail) {
+		org.thymeleaf.context.Context context = new org.thymeleaf.context.Context();
+		context.setVariables(mail.getModel());
+		String html = this.templateEngine.process(EMAIL_TEMPLATE, context);
+
+		return html;
 	}
 
 }

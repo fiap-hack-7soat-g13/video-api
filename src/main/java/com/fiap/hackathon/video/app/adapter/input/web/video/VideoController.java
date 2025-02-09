@@ -5,10 +5,8 @@ import com.fiap.hackathon.video.app.adapter.input.web.video.mapper.VideoResponse
 import com.fiap.hackathon.video.core.common.exception.NotFoundException;
 import com.fiap.hackathon.video.core.domain.User;
 import com.fiap.hackathon.video.core.domain.Video;
-import com.fiap.hackathon.video.core.usecase.ThumbnailDownloadUseCase;
-import com.fiap.hackathon.video.core.usecase.VideoCreateUseCase;
-import com.fiap.hackathon.video.core.usecase.VideoGetUseCase;
-import com.fiap.hackathon.video.core.usecase.VideoListUseCase;
+import com.fiap.hackathon.video.core.usecase.*;
+import jakarta.mail.MessagingException;
 import lombok.AllArgsConstructor;
 import org.springframework.core.io.InputStreamSource;
 import org.springframework.http.ContentDisposition;
@@ -33,6 +31,7 @@ public class VideoController {
     private final VideoListUseCase videoListUseCase;
     private final ThumbnailDownloadUseCase thumbnailDownloadUseCase;
     private final VideoResponseMapper videoResponseMapper;
+    private final SendMailUseCase sendMailUseCase;
 
     @PostMapping
     public VideoResponse create(@RequestParam MultipartFile file) {
@@ -91,6 +90,12 @@ public class VideoController {
         } else {
             throw new UnauthorizedUserException("Usuário não autenticado");
         }
+    }
+
+    @GetMapping("/sendmail")
+    public ResponseEntity sendmail() throws MessagingException {
+        sendMailUseCase.execute("grazielagoedert@gmail.com", 1L);
+        return (ResponseEntity) ResponseEntity.ok();
     }
 
 }

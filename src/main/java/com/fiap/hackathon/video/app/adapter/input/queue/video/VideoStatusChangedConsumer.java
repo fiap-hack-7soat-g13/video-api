@@ -6,6 +6,7 @@ import com.fiap.hackathon.video.core.domain.VideoStatus;
 import com.fiap.hackathon.video.core.usecase.SendMailUseCase;
 import com.fiap.hackathon.video.core.usecase.VideoGetUseCase;
 import com.fiap.hackathon.video.core.usecase.VideoStatusUpdateUseCase;
+import jakarta.mail.MessagingException;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -21,7 +22,7 @@ public class VideoStatusChangedConsumer {
 
     @Transactional
     @RabbitListener(queues = "${application.queue.videoStatusChanged.name}")
-    public void consume(VideoStatusChangedEvent event) {
+    public void consume(VideoStatusChangedEvent event) throws MessagingException {
         videoStatusUpdateUseCase.execute(event.getId(), event.getStatus());
         if (VideoStatus.FAILED == event.getStatus()) {
             Video video = videoGetUseCase.execute(event.getId());
