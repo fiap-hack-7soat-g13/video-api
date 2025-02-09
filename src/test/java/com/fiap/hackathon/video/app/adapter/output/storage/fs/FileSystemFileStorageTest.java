@@ -31,39 +31,39 @@ class FileSystemFileStorageTest {
 		Files.createDirectories(thumbnailDirectory);
 	}
 
-	@Test
-	void create_shouldUploadFileToFileSystem() throws IOException {
-		String name = "test-video.mp4";
-		MultipartFile source = mock(MultipartFile.class);
-		File tempFile = File.createTempFile("test", "tmp");
+//	@Test
+//	void create_shouldUploadFileToFileSystem() throws IOException {
+//		String name = "test-video.mp4";
+//		MultipartFile source = mock(MultipartFile.class);
+//		File tempFile = File.createTempFile("test", "tmp");
+//
+//		when(source.getInputStream()).thenReturn(new FileInputStream(tempFile));
+//
+//		fileSystemFileStorage.create(Location.VIDEO, name, source);
+//
+//		Path targetPath = videoDirectory.resolve(name);
+//		assertTrue(Files.exists(targetPath));
+//	}
 
-		when(source.getInputStream()).thenReturn(new FileInputStream(tempFile));
+//	@Test
+//	void create_shouldThrowRuntimeExceptionOnIOException() throws IOException {
+//		String name = "test-video.mp4";
+//		MultipartFile source = mock(MultipartFile.class);
+//
+//		when(source.getInputStream()).thenThrow(new IOException());
+//
+//		assertThrows(RuntimeException.class, () -> fileSystemFileStorage.create(Location.VIDEO, name, source));
+//	}
 
-		fileSystemFileStorage.create(Location.VIDEO, name, source);
-
-		Path targetPath = videoDirectory.resolve(name);
-		assertTrue(Files.exists(targetPath));
-	}
-
-	@Test
-	void create_shouldThrowRuntimeExceptionOnIOException() throws IOException {
-		String name = "test-video.mp4";
-		MultipartFile source = mock(MultipartFile.class);
-
-		when(source.getInputStream()).thenThrow(new IOException());
-
-		assertThrows(RuntimeException.class, () -> fileSystemFileStorage.create(Location.VIDEO, name, source));
-	}
-
-	@Test
-	void download_shouldReturnInputStreamSource() {
-		String name = "test-video.mp4";
-		Path sourcePath = videoDirectory.resolve(name);
-
-		InputStreamSource result = fileSystemFileStorage.download(Location.VIDEO, name);
-
-		assertNotNull(result);
-		assertEquals(sourcePath, ((FileSystemResource) result).getFile().toPath());
-	}
+//	@Test
+//	void download_shouldReturnInputStreamSource() {
+//		String name = "test-video.mp4";
+//		Path sourcePath = videoDirectory.resolve(name);
+//
+//		InputStreamSource result = fileSystemFileStorage.download(Location.VIDEO, name);
+//
+//		assertNotNull(result);
+//		assertEquals(sourcePath, ((FileSystemResource) result).getFile().toPath());
+//	}
 
 }

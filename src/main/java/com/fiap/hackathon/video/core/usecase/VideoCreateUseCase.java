@@ -23,17 +23,17 @@ public class VideoCreateUseCase {
     private final FileStorage fileStorage;
     private final VideoReceivedDispatcher videoReceivedDispatcher;
 
-    public Video execute(UUID identifier, User user) {
+    public Video execute(UUID uploadId, String fileName, User user) {
 
         return Files.createTempDirAndExecute(tempDir -> {
 
-            Path target = tempDir.resolve(identifier.toString());
+            Path target = tempDir.resolve(uploadId.toString());
 
-            fileStorage.download(Location.UPLOAD, identifier.toString(), target);
+            fileStorage.download(Location.UPLOAD, uploadId.toString(), target);
 
             Video video = new Video();
 
-            video.setName("video.zip");
+            video.setName(fileName);
             video.setSize(target.toFile().length());
             video.setContentType(Files.detectContentType(target));
             video.setStatus(VideoStatus.RECEIVED);
@@ -43,7 +43,7 @@ public class VideoCreateUseCase {
 
             Video savedVideo = videoGateway.save(video);
 
-            fileStorage.copy(Location.UPLOAD, identifier.toString(), Location.VIDEO, savedVideo.getId().toString());
+            fileStorage.copy(Location.UPLOAD, uploadId.toString(), Location.VIDEO, savedVideo.getId().toString());
 
             videoReceivedDispatcher.dispatch(savedVideo);
 

@@ -18,12 +18,12 @@ class ThumbnailDownloadUseCaseTest {
 		String link = "link";
 		Location location = mock(Location.class);
 
-		when(fileStorage.generateDownloadLink(Location.THUMBNAIL, id.toString())).thenReturn(link);
+		when(fileStorage.generateDownloadUrl(Location.THUMBNAIL, id.toString())).thenReturn(link);
 
 		String result = useCase.execute(id);
 
 		assertEquals(link, result);
-		verify(fileStorage).generateDownloadLink(location, id.toString());
+		verify(fileStorage).generateDownloadUrl(location, id.toString());
 	}
 
 	@Test
@@ -35,12 +35,12 @@ class ThumbnailDownloadUseCaseTest {
 	void execute_shouldHandleNonExistentId() {
 		Long id = 999L;
 
-		when(fileStorage.download(Location.THUMBNAIL, id.toString())).thenReturn(null);
+		when(fileStorage.generateDownloadUrl(Location.THUMBNAIL, id.toString())).thenReturn(null);
 
 		String result = useCase.execute(id);
 
 		assertNull(result);
-		verify(fileStorage).generateDownloadLink(Location.THUMBNAIL, id.toString());
+		verify(fileStorage).generateDownloadUrl(Location.THUMBNAIL, id.toString());
 	}
 
 }

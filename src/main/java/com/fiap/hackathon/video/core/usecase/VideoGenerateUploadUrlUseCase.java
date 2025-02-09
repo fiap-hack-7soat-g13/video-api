@@ -13,8 +13,8 @@ public class VideoGenerateUploadUrlUseCase {
 
     private final FileStorage fileStorage;
 
-    public String execute(UUID identifier) {
-        return fileStorage.generateUploadUrl(Location.UPLOAD, identifier.toString());
+    public String execute(UUID id) {
+        return fileStorage.generateUploadUrl(Location.UPLOAD, id.toString());
     }
 
 }
