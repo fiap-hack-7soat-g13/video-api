@@ -37,8 +37,7 @@ public class GatewayAppSecurityConfig {
 	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 		UserDetails userDetails = User.builder().username("teste").id(1L).email("teste@teste.com.br").build();
 		SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities()));
-		return http.csrf(csrf -> csrf.disable())
-				.sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+		return http.sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 				.authorizeHttpRequests(req -> {
 					req.anyRequest().permitAll();
 				})

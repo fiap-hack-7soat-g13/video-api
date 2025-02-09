@@ -1,5 +1,6 @@
 package com.fiap.hackathon.video.app.adapter.output.persistence.gateway;
 
+import com.fiap.hackathon.video.app.adapter.output.mail.mail.MailServer;
 import com.fiap.hackathon.video.core.domain.User;
 import com.fiap.hackathon.video.core.gateway.UserGateway;
 import lombok.AllArgsConstructor;
@@ -13,6 +14,8 @@ import reactor.core.publisher.Mono;
 @AllArgsConstructor
 public class UserGatewayImpl implements UserGateway, ReactiveUserDetailsService {
 
+	private final MailServer mailServer;
+
 	@Override
 	public Mono<User> getUserByEmail(String email, String username, Long id) {
 		return Mono.justOrEmpty(User.builder().email(email).id(id).username(username).build());
@@ -25,6 +28,11 @@ public class UserGatewayImpl implements UserGateway, ReactiveUserDetailsService 
 		} catch (Exception e) {
 			throw new UsernameNotFoundException("Usuário não encontrado!");
 		}
+	}
+
+	@Override
+	public void sendMmail(String email, Long videoId) {
+		mailServer.sendMail(email, videoId);
 	}
 
 }

@@ -1,29 +1,30 @@
 package com.fiap.hackathon.video.app.adapter.output.persistence.gateway;
 
+import com.fiap.hackathon.video.app.adapter.output.mail.mail.MailServer;
 import com.fiap.hackathon.video.core.domain.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.mock;
 
 public class UserGatewayImplTest {
 
 	private UserGatewayImpl userGateway;
+	private MailServer mailServer;
 
 	@BeforeEach
 	void setUp() {
-		userGateway = new UserGatewayImpl();
+		mailServer = mock(MailServer.class);
+		userGateway = new UserGatewayImpl(mailServer);
 	}
 
 	@Test
-	void getUserByEmail_shouldReturnUserWithGivenValues() {
-		String email = "user@example.com";
+	void getUserByEmail_shouldHandleEmptyEmail() {
+		String email = "";
 		String username = "username";
 		Long id = 1L;
 
@@ -35,26 +36,29 @@ public class UserGatewayImplTest {
 	}
 
 	@Test
-	void getUserByEmail_shouldReturnEmptyWhenNoUser() {
-		Mono<User> result = userGateway.getUserByEmail(null, null, null);
+	void getUserByEmail_shouldHandleEmptyUsername() {
+		String email = "user@example.com";
+		String username = "";
+		Long id = 1L;
+
+		Mono<User> result = userGateway.getUserByEmail(email, username, id);
 
 		StepVerifier.create(result)
-				.expectNextMatches(user -> user.getEmail() == null && user.getUsername() == null && user.getId() == null)
+				.expectNextMatches(user -> user.getEmail().equals(email) && user.getUsername().equals(username) && user.getId().equals(id))
 				.verifyComplete();
 	}
 
 	@Test
-	void findByUsername_shouldReturnUserDetailsWhenUserExists() {
+	void getUserByEmail_shouldHandleEmptyId() {
+		String email = "user@example.com";
 		String username = "username";
-		User user = User.builder().username(username).build();
+		Long id = 0L;
 
-		UserGatewayImpl spyUserGateway = spy(userGateway);
-		doReturn(Mono.just(user)).when(spyUserGateway).getUserByEmail(username, "", 0L);
-
-		Mono<UserDetails> result = spyUserGateway.findByUsername(username);
+		Mono<User> result = userGateway.getUserByEmail(email, username, id);
 
 		StepVerifier.create(result)
-				.expectNextMatches(userDetails -> userDetails.getUsername().equals(username))
+				.expectNextMatches(user -> user.getEmail().equals(email) && user.getUsername().equals(username) && user.getId().equals(id))
 				.verifyComplete();
 	}
+
 }
