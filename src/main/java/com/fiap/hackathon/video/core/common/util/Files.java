@@ -3,6 +3,7 @@ package com.fiap.hackathon.video.core.common.util;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.tika.Tika;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -23,16 +24,6 @@ public class Files {
         }
     }
 
-    public static <T> T createTempFileAndExecute(Function<Path, T> function) {
-        Path tempFile = null;
-        try {
-            tempFile = createTempFile();
-            return function.apply(tempFile);
-        } finally {
-            deleteQuietly(tempFile);
-        }
-    }
-
     public static <T> T createTempDirAndExecute(Function<Path, T> function) {
         Path tempDir = null;
         try {
@@ -40,6 +31,14 @@ public class Files {
             return function.apply(tempDir);
         } finally {
             deleteQuietly(tempDir);
+        }
+    }
+
+    public static String detectContentType(Path path) {
+        try {
+            return new Tika().detect(path);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 

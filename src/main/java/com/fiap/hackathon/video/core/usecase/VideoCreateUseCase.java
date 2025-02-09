@@ -11,6 +11,7 @@ import com.fiap.hackathon.video.core.gateway.VideoGateway;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -26,13 +27,15 @@ public class VideoCreateUseCase {
 
         return Files.createTempDirAndExecute(tempDir -> {
 
-            fileStorage.download(Location.UPLOAD, identifier.toString(), tempDir.resolve(identifier.toString()));
+            Path target = tempDir.resolve(identifier.toString());
+
+            fileStorage.download(Location.UPLOAD, identifier.toString(), target);
 
             Video video = new Video();
 
-            video.setName("video.mp4");
-            video.setSize(tempDir.toFile().length());
-            video.setContentType("video/mp4");
+            video.setName("video.zip");
+            video.setSize(target.toFile().length());
+            video.setContentType(Files.detectContentType(target));
             video.setStatus(VideoStatus.RECEIVED);
             video.setCreatedAt(LocalDateTime.now());
             video.setCreatedBy(user.getId());
