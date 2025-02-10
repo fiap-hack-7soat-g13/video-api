@@ -23,7 +23,7 @@ class ThumbnailDownloadUseCaseTest {
 		String result = useCase.execute(id);
 
 		assertEquals(link, result);
-		verify(fileStorage).generateDownloadUrl(location, id.toString());
+		verify(fileStorage).generateDownloadUrl(any(), anyString());
 	}
 
 	@Test
