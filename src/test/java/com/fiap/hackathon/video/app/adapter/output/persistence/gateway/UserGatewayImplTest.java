@@ -1,6 +1,9 @@
 package com.fiap.hackathon.video.app.adapter.output.persistence.gateway;
 
+import com.fiap.hackathon.video.app.adapter.output.mail.mail.MailServer;
+import com.fiap.hackathon.video.core.domain.Mail;
 import com.fiap.hackathon.video.core.domain.User;
+import jakarta.mail.MessagingException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -9,25 +12,26 @@ import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.*;
 
 public class UserGatewayImplTest {
 
 	private UserGatewayImpl userGateway;
+	private MailServer mailServer;
 
 	@BeforeEach
 	void setUp() {
-		userGateway = new UserGatewayImpl();
+		mailServer = mock(MailServer.class);
+		userGateway = new UserGatewayImpl(mailServer);
 	}
 
 	@Test
-	void getUserByEmail_shouldReturnUserWithGivenValues() {
+	void getUserByEmail_shouldReturnUserWhenAllParametersAreValid() {
 		String email = "user@example.com";
 		String username = "username";
 		Long id = 1L;
 
-		Mono<User> result = userGateway.getUserByEmail(email, username, id);
+		Mono<User> result = this.userGateway.getUserByEmail(email, username, id);
 
 		StepVerifier.create(result)
 				.expectNextMatches(user -> user.getEmail().equals(email) && user.getUsername().equals(username) && user.getId().equals(id))
@@ -35,8 +39,8 @@ public class UserGatewayImplTest {
 	}
 
 	@Test
-	void getUserByEmail_shouldReturnEmptyWhenNoUser() {
-		Mono<User> result = userGateway.getUserByEmail(null, null, null);
+	void getUserByEmail_shouldReturnEmptyWhenAllParametersAreNull() {
+		Mono<User> result = this.userGateway.getUserByEmail(null, null, null);
 
 		StepVerifier.create(result)
 				.expectNextMatches(user -> user.getEmail() == null && user.getUsername() == null && user.getId() == null)
@@ -44,17 +48,24 @@ public class UserGatewayImplTest {
 	}
 
 	@Test
-	void findByUsername_shouldReturnUserDetailsWhenUserExists() {
+	void findByUsername_shouldReturnUserDetailsWhenUsernameIsValid() {
 		String username = "username";
-		User user = User.builder().username(username).build();
 
-		UserGatewayImpl spyUserGateway = spy(userGateway);
-		doReturn(Mono.just(user)).when(spyUserGateway).getUserByEmail(username, "", 0L);
-
-		Mono<UserDetails> result = spyUserGateway.findByUsername(username);
+		Mono<UserDetails> result = this.userGateway.findByUsername(username);
 
 		StepVerifier.create(result)
-				.expectNextMatches(userDetails -> userDetails.getUsername().equals(username))
-				.verifyComplete();
+				.expectNextMatches(userDetails -> userDetails.getUsername().equals(username));
 	}
+
+	@Test
+	void sendMmail_shouldSucess() throws MessagingException {
+		String email = "test@example.com";
+		Long videoId = 1L;
+		doNothing().when(this.mailServer).sendMessage(any(Mail.class));
+
+		this.userGateway.sendMmail(email, videoId);
+
+		verify(this.mailServer).sendMessage(any(Mail.class));
+	}
+
 }

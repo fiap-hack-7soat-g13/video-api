@@ -8,6 +8,7 @@ import com.fiap.hackathon.video.core.common.exception.NotFoundException;
 import com.fiap.hackathon.video.core.domain.User;
 import com.fiap.hackathon.video.core.domain.Video;
 import com.fiap.hackathon.video.core.usecase.*;
+import jakarta.mail.MessagingException;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +18,8 @@ import java.net.URI;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
+
+import static org.springframework.http.HttpStatus.OK;
 
 @RestController
 @AllArgsConstructor
@@ -28,6 +31,7 @@ public class VideoController {
     private final VideoListUseCase videoListUseCase;
     private final ThumbnailDownloadUseCase thumbnailDownloadUseCase;
     private final VideoResponseMapper videoResponseMapper;
+    private final SendMailUseCase sendMailUseCase;
 
     @PutMapping
     public VideoUploadUrlResponse generateUploadUrl() {
@@ -79,16 +83,18 @@ public class VideoController {
     }
 
     private User assertAuthenticatedUser() {
-//        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-//        if (!authentication.isAuthenticated()) {
-//            throw new UnauthorizedUserException("Usuário não autenticado");
-//        }
-//        return (User) authentication.getPrincipal();
         return User.builder()
                 .id(1L)
                 .email("admin@fiap.com")
                 .username("admin")
                 .build();
+    }
+
+    @GetMapping("/sendmail")
+    public ResponseEntity sendmail() throws MessagingException {
+        sendMailUseCase.execute("grazielagoedert@gmail.com", 1L);
+        return ResponseEntity.status(OK)
+                .body("E-mail enviado com Sucess!!!");
     }
 
 }

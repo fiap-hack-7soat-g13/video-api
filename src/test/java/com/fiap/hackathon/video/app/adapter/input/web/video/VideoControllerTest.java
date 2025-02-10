@@ -34,6 +34,7 @@ class VideoControllerTest {
 	private VideoController videoController;
 	private Authentication authentication;
 	private SecurityContext securityContext;
+	private SendMailUseCase sendMailUseCase;
 
 	@BeforeEach
 	void setUp() {
@@ -43,40 +44,13 @@ class VideoControllerTest {
 		videoListUseCase = mock(VideoListUseCase.class);
 		thumbnailDownloadUseCase = mock(ThumbnailDownloadUseCase.class);
 		videoResponseMapper = mock(VideoResponseMapper.class);
-		videoController = new VideoController(videoGenerateUploadLinkUseCase, videoCreateUseCase, videoGetUseCase, videoListUseCase, thumbnailDownloadUseCase, videoResponseMapper);
+		sendMailUseCase = mock(SendMailUseCase.class);
+		videoController = new VideoController(videoCreateUseCase, videoGetUseCase, videoListUseCase,
+				thumbnailDownloadUseCase, videoResponseMapper, sendMailUseCase);
 		authentication = mock(Authentication.class);
 		securityContext = mock(SecurityContext.class);
 		SecurityContextHolder.setContext(securityContext);
 	}
-
-//	@Test
-//	void create_shouldReturnVideoResponseWhenAuthenticated() {
-//		UUID identifier = UUID.randomUUID();
-//		User user = User.builder().build();
-//		Video video = new Video();
-//		VideoResponse videoResponse = new VideoResponse();
-//
-//		when(securityContext.getAuthentication()).thenReturn(authentication);
-//		when(authentication.isAuthenticated()).thenReturn(true);
-//		when(authentication.getPrincipal()).thenReturn(user);
-//		when(videoCreateUseCase.execute(identifier, user)).thenReturn(video);
-//		when(videoResponseMapper.toVideoResponse(video)).thenReturn(videoResponse);
-//
-//		VideoResponse response = videoController.create(identifier);
-//
-//		assertNotNull(response);
-//		assertEquals(videoResponse, response);
-//	}
-
-//	@Test
-//	void create_shouldThrowUnauthorizedUserExceptionWhenNotAuthenticated() {
-//		UUID identifier = UUID.randomUUID();
-//
-//		when(securityContext.getAuthentication()).thenReturn(authentication);
-//		when(authentication.isAuthenticated()).thenReturn(false);
-//
-//		assertThrows(UnauthorizedUserException.class, () -> videoController.create(identifier));
-//	}
 
 	@Test
 	void get_shouldReturnVideoResponseWhenAuthenticatedAndVideoExists() {

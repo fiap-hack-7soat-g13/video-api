@@ -1,8 +1,12 @@
 package com.fiap.hackathon.video.app.adapter.input.queue.video;
 
 import com.fiap.hackathon.video.app.adapter.input.queue.video.dto.VideoStatusChangedEvent;
+import com.fiap.hackathon.video.core.domain.Video;
 import com.fiap.hackathon.video.core.domain.VideoStatus;
+import com.fiap.hackathon.video.core.usecase.SendMailUseCase;
+import com.fiap.hackathon.video.core.usecase.VideoGetUseCase;
 import com.fiap.hackathon.video.core.usecase.VideoStatusUpdateUseCase;
+import jakarta.mail.MessagingException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -11,16 +15,20 @@ import static org.mockito.Mockito.*;
 public class VideoStatusChangedConsumerTest {
 
 	private VideoStatusUpdateUseCase videoStatusUpdateUseCase;
+	private VideoGetUseCase videoGetUseCase;
+	private SendMailUseCase sendMailUseCase;
 	private VideoStatusChangedConsumer videoStatusChangedConsumer;
 
 	@BeforeEach
 	void setUp() {
 		videoStatusUpdateUseCase = mock(VideoStatusUpdateUseCase.class);
-		videoStatusChangedConsumer = new VideoStatusChangedConsumer(videoStatusUpdateUseCase);
+		videoGetUseCase = mock(VideoGetUseCase.class);
+		sendMailUseCase = mock(SendMailUseCase.class);
+		videoStatusChangedConsumer = new VideoStatusChangedConsumer(videoStatusUpdateUseCase, videoGetUseCase, sendMailUseCase);
 	}
 
 	@Test
-	void consume_shouldExecuteUseCaseWithValidEvent() {
+	void consume_shouldExecuteUseCaseWithValidEvent() throws MessagingException {
 		VideoStatusChangedEvent event = VideoStatusChangedEvent.builder()
 				.id(1L)
 				.status(VideoStatus.SUCCEEDED)
@@ -32,7 +40,7 @@ public class VideoStatusChangedConsumerTest {
 	}
 
 	@Test
-	void consume_shouldHandleNullEvent() {
+	void consume_shouldHandleNullEvent() throws MessagingException {
 		VideoStatusChangedEvent event = VideoStatusChangedEvent.builder()
 				.id(null)
 				.status(null)
@@ -44,7 +52,7 @@ public class VideoStatusChangedConsumerTest {
 	}
 
 	@Test
-	void consume_shouldHandleNullId() {
+	void consume_shouldHandleNullId() throws MessagingException {
 		VideoStatusChangedEvent event = VideoStatusChangedEvent.builder()
 				.id(null)
 				.status(VideoStatus.SUCCEEDED)
@@ -56,7 +64,7 @@ public class VideoStatusChangedConsumerTest {
 	}
 
 	@Test
-	void consume_shouldHandleNullStatus() {
+	void consume_shouldHandleNullStatus() throws MessagingException {
 		VideoStatusChangedEvent event = VideoStatusChangedEvent.builder()
 				.id(1L)
 				.status(null)
@@ -67,4 +75,21 @@ public class VideoStatusChangedConsumerTest {
 		verify(videoStatusUpdateUseCase, times(1)).execute(1L, null);
 	}
 
+	@Test
+	void consume_shouldSendMailWhenStatusIsFailed() throws MessagingException {
+		VideoStatusChangedEvent event = VideoStatusChangedEvent.builder()
+				.id(1L)
+				.status(VideoStatus.FAILED)
+				.build();
+		Video video = new Video();
+		video.setCreatedByEmail("test@example.com");
+
+		when(videoGetUseCase.execute(1L)).thenReturn(video);
+
+		videoStatusChangedConsumer.consume(event);
+
+		verify(videoStatusUpdateUseCase, times(1)).execute(1L, VideoStatus.FAILED);
+		verify(videoGetUseCase, times(1)).execute(1L);
+		verify(sendMailUseCase, times(1)).execute("test@example.com", 1L);
+	}
 }

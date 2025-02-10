@@ -26,6 +26,26 @@ spring:
     multipart:
       max-file-size: -1
       max-request-size: -1
+  mail:
+    default-encoding: UTF-8
+    host: smtp.gmail.com
+    username: fiaphackathon42@gmail.com
+    password: rgcdakbsovlybdrk
+    port: 587
+    protocol: smtp
+    test-connection: false
+    properties:
+      mail:
+        smtp:
+          auth: true
+          connectiontimeout: 5000
+          timeout: 3000
+          writetimeout: 5000
+          starttls:
+            enable: true
+          socketFactory:
+            port: 465
+            class: java.net.ssl.SSLSocketFactory
 
 application:
   queue:
