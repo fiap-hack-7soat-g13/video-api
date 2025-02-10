@@ -14,11 +14,9 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.common.exceptions.UnauthorizedUserException;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.net.URI;
 import java.util.List;
-import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -45,8 +43,8 @@ class VideoControllerTest {
 		thumbnailDownloadUseCase = mock(ThumbnailDownloadUseCase.class);
 		videoResponseMapper = mock(VideoResponseMapper.class);
 		sendMailUseCase = mock(SendMailUseCase.class);
-		videoController = new VideoController(videoCreateUseCase, videoGetUseCase, videoListUseCase,
-				thumbnailDownloadUseCase, videoResponseMapper, sendMailUseCase);
+		videoController = new VideoController(videoGenerateUploadLinkUseCase, videoCreateUseCase, videoGetUseCase,
+				videoListUseCase, thumbnailDownloadUseCase, videoResponseMapper, sendMailUseCase);
 		authentication = mock(Authentication.class);
 		securityContext = mock(SecurityContext.class);
 		SecurityContextHolder.setContext(securityContext);
