@@ -22,6 +22,8 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 import java.util.Objects;
 
+import static org.springframework.http.HttpStatus.OK;
+
 @RestController
 @AllArgsConstructor
 public class VideoController {
@@ -95,7 +97,8 @@ public class VideoController {
     @GetMapping("/sendmail")
     public ResponseEntity sendmail() throws MessagingException {
         sendMailUseCase.execute("grazielagoedert@gmail.com", 1L);
-        return (ResponseEntity) ResponseEntity.ok();
+        return ResponseEntity.status(OK)
+                .body("E-mail enviado com Sucess!!!");
     }
 
 }

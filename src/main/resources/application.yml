@@ -30,7 +30,7 @@ spring:
     default-encoding: UTF-8
     host: smtp.gmail.com
     username: fiaphackathon42@gmail.com
-    password: Fiap321_
+    password: rgcdakbsovlybdrk
     port: 587
     protocol: smtp
     test-connection: false

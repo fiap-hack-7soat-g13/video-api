@@ -31,19 +31,11 @@ public class MailServer {
 				StandardCharsets.UTF_8.name());
 
 		helper.setTo(mail.getTo());
-		helper.setText(this.getHtmlContent(mail), true);
+		helper.setText(mail.getContent(), true);
 		helper.setSubject(mail.getSubject());
 		helper.setFrom(mail.getFrom());
 
 		return message;
-	}
-
-	private String getHtmlContent(Mail mail) {
-		org.thymeleaf.context.Context context = new org.thymeleaf.context.Context();
-		context.setVariables(mail.getModel());
-		String html = this.templateEngine.process(EMAIL_TEMPLATE, context);
-
-		return html;
 	}
 
 }
