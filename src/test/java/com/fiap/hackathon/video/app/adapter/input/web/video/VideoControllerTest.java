@@ -5,10 +5,7 @@ import com.fiap.hackathon.video.app.adapter.input.web.video.mapper.VideoResponse
 import com.fiap.hackathon.video.core.common.exception.NotFoundException;
 import com.fiap.hackathon.video.core.domain.User;
 import com.fiap.hackathon.video.core.domain.Video;
-import com.fiap.hackathon.video.core.usecase.ThumbnailDownloadUseCase;
-import com.fiap.hackathon.video.core.usecase.VideoCreateUseCase;
-import com.fiap.hackathon.video.core.usecase.VideoGetUseCase;
-import com.fiap.hackathon.video.core.usecase.VideoListUseCase;
+import com.fiap.hackathon.video.core.usecase.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.core.io.InputStreamSource;
@@ -34,6 +31,7 @@ class VideoControllerTest {
 	private VideoController videoController;
 	private Authentication authentication;
 	private SecurityContext securityContext;
+	private SendMailUseCase sendMailUseCase;
 
 	@BeforeEach
 	void setUp() {
@@ -42,7 +40,9 @@ class VideoControllerTest {
 		videoListUseCase = mock(VideoListUseCase.class);
 		thumbnailDownloadUseCase = mock(ThumbnailDownloadUseCase.class);
 		videoResponseMapper = mock(VideoResponseMapper.class);
-		videoController = new VideoController(videoCreateUseCase, videoGetUseCase, videoListUseCase, thumbnailDownloadUseCase, videoResponseMapper);
+		sendMailUseCase = mock(SendMailUseCase.class);
+		videoController = new VideoController(videoCreateUseCase, videoGetUseCase, videoListUseCase,
+				thumbnailDownloadUseCase, videoResponseMapper, sendMailUseCase);
 		authentication = mock(Authentication.class);
 		securityContext = mock(SecurityContext.class);
 		SecurityContextHolder.setContext(securityContext);

@@ -194,11 +194,6 @@
 			<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
 			<version>${org.springdoc.version}</version>
 		</dependency>
-<!--		<dependency>-->
-<!--			<groupId>javax.mail</groupId>-->
-<!--			<artifactId>mail</artifactId>-->
-<!--			<version>1.4.7</version>-->
-<!--		</dependency>-->
 		<dependency>
 			<groupId>jakarta.mail</groupId>
 			<artifactId>jakarta.mail-api</artifactId>

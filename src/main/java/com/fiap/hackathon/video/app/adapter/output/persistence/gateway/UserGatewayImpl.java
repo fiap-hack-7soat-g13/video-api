@@ -8,7 +8,6 @@ import jakarta.mail.MessagingException;
 import lombok.AllArgsConstructor;
 import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
@@ -25,11 +24,7 @@ public class UserGatewayImpl implements UserGateway, ReactiveUserDetailsService 
 
 	@Override
 	public Mono<UserDetails> findByUsername(String username) {
-		try {
-			return Mono.justOrEmpty((UserDetails) getUserByEmail(username, "", 0L).block());
-		} catch (Exception e) {
-			throw new UsernameNotFoundException("Usuário não encontrado!");
-		}
+		return Mono.justOrEmpty(getUserByEmail(username, "", 0L).block());
 	}
 
 	@Override

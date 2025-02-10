@@ -6,6 +6,7 @@ import com.fiap.hackathon.video.core.domain.VideoStatus;
 import com.fiap.hackathon.video.core.usecase.SendMailUseCase;
 import com.fiap.hackathon.video.core.usecase.VideoGetUseCase;
 import com.fiap.hackathon.video.core.usecase.VideoStatusUpdateUseCase;
+import jakarta.mail.MessagingException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -27,7 +28,7 @@ public class VideoStatusChangedConsumerTest {
 	}
 
 	@Test
-	void consume_shouldExecuteUseCaseWithValidEvent() {
+	void consume_shouldExecuteUseCaseWithValidEvent() throws MessagingException {
 		VideoStatusChangedEvent event = VideoStatusChangedEvent.builder()
 				.id(1L)
 				.status(VideoStatus.SUCCEEDED)
@@ -39,7 +40,7 @@ public class VideoStatusChangedConsumerTest {
 	}
 
 	@Test
-	void consume_shouldHandleNullEvent() {
+	void consume_shouldHandleNullEvent() throws MessagingException {
 		VideoStatusChangedEvent event = VideoStatusChangedEvent.builder()
 				.id(null)
 				.status(null)
@@ -51,7 +52,7 @@ public class VideoStatusChangedConsumerTest {
 	}
 
 	@Test
-	void consume_shouldHandleNullId() {
+	void consume_shouldHandleNullId() throws MessagingException {
 		VideoStatusChangedEvent event = VideoStatusChangedEvent.builder()
 				.id(null)
 				.status(VideoStatus.SUCCEEDED)
@@ -63,7 +64,7 @@ public class VideoStatusChangedConsumerTest {
 	}
 
 	@Test
-	void consume_shouldHandleNullStatus() {
+	void consume_shouldHandleNullStatus() throws MessagingException {
 		VideoStatusChangedEvent event = VideoStatusChangedEvent.builder()
 				.id(1L)
 				.status(null)
@@ -75,7 +76,7 @@ public class VideoStatusChangedConsumerTest {
 	}
 
 	@Test
-	void consume_shouldSendMailWhenStatusIsFailed() {
+	void consume_shouldSendMailWhenStatusIsFailed() throws MessagingException {
 		VideoStatusChangedEvent event = VideoStatusChangedEvent.builder()
 				.id(1L)
 				.status(VideoStatus.FAILED)
