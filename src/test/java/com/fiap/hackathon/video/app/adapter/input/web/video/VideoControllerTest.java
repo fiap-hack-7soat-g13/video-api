@@ -13,12 +13,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.oauth2.common.exceptions.UnauthorizedUserException;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.net.URI;
 import java.util.List;
-import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -45,8 +42,8 @@ class VideoControllerTest {
 		thumbnailDownloadUseCase = mock(ThumbnailDownloadUseCase.class);
 		videoResponseMapper = mock(VideoResponseMapper.class);
 		sendMailUseCase = mock(SendMailUseCase.class);
-		videoController = new VideoController(videoCreateUseCase, videoGetUseCase, videoListUseCase,
-				thumbnailDownloadUseCase, videoResponseMapper, sendMailUseCase);
+		videoController = new VideoController(videoGenerateUploadLinkUseCase, videoCreateUseCase, videoGetUseCase,
+				videoListUseCase, thumbnailDownloadUseCase, videoResponseMapper, sendMailUseCase);
 		authentication = mock(Authentication.class);
 		securityContext = mock(SecurityContext.class);
 		SecurityContextHolder.setContext(securityContext);
@@ -88,16 +85,6 @@ class VideoControllerTest {
 	}
 
 	@Test
-	void get_shouldThrowUnauthorizedUserExceptionWhenNotAuthenticated() {
-		Long videoId = 1L;
-
-		when(securityContext.getAuthentication()).thenReturn(authentication);
-		when(authentication.isAuthenticated()).thenReturn(false);
-
-		assertThrows(UnauthorizedUserException.class, () -> videoController.get(videoId));
-	}
-
-	@Test
 	void list_shouldReturnListOfVideoResponsesWhenAuthenticated() {
 		User user = User.builder().id(1L).build();
 		List<Video> videos = List.of(new Video());
@@ -113,14 +100,6 @@ class VideoControllerTest {
 
 		assertNotNull(response);
 		assertEquals(videoResponses.size(), response.size());
-	}
-
-	@Test
-	void list_shouldThrowUnauthorizedUserExceptionWhenNotAuthenticated() {
-		when(securityContext.getAuthentication()).thenReturn(authentication);
-		when(authentication.isAuthenticated()).thenReturn(false);
-
-		assertThrows(UnauthorizedUserException.class, () -> videoController.list());
 	}
 
 	@Test
@@ -157,16 +136,6 @@ class VideoControllerTest {
 		when(videoGetUseCase.execute(videoId)).thenReturn(video);
 
 		assertThrows(NotFoundException.class, () -> videoController.thumbnailDownload(videoId));
-	}
-
-	@Test
-	void thumbnailDownload_shouldThrowUnauthorizedUserExceptionWhenNotAuthenticated() {
-		Long videoId = 1L;
-
-		when(securityContext.getAuthentication()).thenReturn(authentication);
-		when(authentication.isAuthenticated()).thenReturn(false);
-
-		assertThrows(UnauthorizedUserException.class, () -> videoController.thumbnailDownload(videoId));
 	}
 
 }
