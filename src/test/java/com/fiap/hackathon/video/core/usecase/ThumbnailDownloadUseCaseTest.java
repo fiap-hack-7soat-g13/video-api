@@ -3,7 +3,6 @@ package com.fiap.hackathon.video.core.usecase;
 import com.fiap.hackathon.video.app.adapter.output.storage.FileStorage;
 import com.fiap.hackathon.video.app.adapter.output.storage.Location;
 import org.junit.jupiter.api.Test;
-import org.springframework.core.io.InputStreamSource;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -14,15 +13,17 @@ class ThumbnailDownloadUseCaseTest {
 	private final ThumbnailDownloadUseCase useCase = new ThumbnailDownloadUseCase(fileStorage);
 
 	@Test
-	void execute_shouldReturnInputStreamSourceWhenIdIsValid() {
+	void execute_shouldReturnLinkWhenIdIsValid() {
 		Long id = 1L;
-		InputStreamSource inputStreamSource = mock(InputStreamSource.class);
+		String link = "link";
+		Location location = mock(Location.class);
 
-		when(fileStorage.download(any(Location.class), eq(id.toString()))).thenReturn(inputStreamSource);
+		when(fileStorage.generateDownloadUrl(Location.THUMBNAIL, id.toString())).thenReturn(link);
 
-		InputStreamSource result = useCase.execute(id);
+		String result = useCase.execute(id);
 
-		verify(fileStorage).download(any(), eq(id.toString()));
+		assertEquals(link, result);
+		verify(fileStorage).generateDownloadUrl(location, id.toString());
 	}
 
 	@Test
@@ -34,11 +35,12 @@ class ThumbnailDownloadUseCaseTest {
 	void execute_shouldHandleNonExistentId() {
 		Long id = 999L;
 
-		when(fileStorage.download(any(Location.class), eq(id.toString()))).thenReturn(null);
+		when(fileStorage.generateDownloadUrl(Location.THUMBNAIL, id.toString())).thenReturn(null);
 
-		InputStreamSource result = useCase.execute(id);
+		String result = useCase.execute(id);
 
 		assertNull(result);
-		verify(fileStorage).download(any(), eq(id.toString()));
+		verify(fileStorage).generateDownloadUrl(Location.THUMBNAIL, id.toString());
 	}
+
 }

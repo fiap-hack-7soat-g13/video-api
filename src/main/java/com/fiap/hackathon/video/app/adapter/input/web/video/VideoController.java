@@ -1,6 +1,8 @@
 package com.fiap.hackathon.video.app.adapter.input.web.video;
 
+import com.fiap.hackathon.video.app.adapter.input.web.video.dto.CreateVideoRequest;
 import com.fiap.hackathon.video.app.adapter.input.web.video.dto.VideoResponse;
+import com.fiap.hackathon.video.app.adapter.input.web.video.dto.VideoUploadUrlResponse;
 import com.fiap.hackathon.video.app.adapter.input.web.video.mapper.VideoResponseMapper;
 import com.fiap.hackathon.video.core.common.exception.NotFoundException;
 import com.fiap.hackathon.video.core.domain.User;
@@ -8,19 +10,14 @@ import com.fiap.hackathon.video.core.domain.Video;
 import com.fiap.hackathon.video.core.usecase.*;
 import jakarta.mail.MessagingException;
 import lombok.AllArgsConstructor;
-import org.springframework.core.io.InputStreamSource;
-import org.springframework.http.ContentDisposition;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.oauth2.common.exceptions.UnauthorizedUserException;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
+import java.net.URI;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 
 import static org.springframework.http.HttpStatus.OK;
 
@@ -28,6 +25,7 @@ import static org.springframework.http.HttpStatus.OK;
 @AllArgsConstructor
 public class VideoController {
 
+    private final VideoGenerateUploadUrlUseCase videoGenerateUploadUrlUseCase;
     private final VideoCreateUseCase videoCreateUseCase;
     private final VideoGetUseCase videoGetUseCase;
     private final VideoListUseCase videoListUseCase;
@@ -35,63 +33,61 @@ public class VideoController {
     private final VideoResponseMapper videoResponseMapper;
     private final SendMailUseCase sendMailUseCase;
 
-    @PostMapping
-    public VideoResponse create(@RequestParam MultipartFile file) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication.isAuthenticated()) {
-            User u = (User) authentication.getPrincipal();
+    @PutMapping
+    public VideoUploadUrlResponse generateUploadUrl() {
+        UUID id = UUID.randomUUID();
+        String url = videoGenerateUploadUrlUseCase.execute(id);
+        return new VideoUploadUrlResponse(id, url);
+    }
 
-            Video video = videoCreateUseCase.execute(file, u);
-            return videoResponseMapper.toVideoResponse(video);
-        } else {
-            throw new UnauthorizedUserException("Usuário não autenticado");
-        }
+    @PostMapping
+    public VideoResponse create(@RequestBody CreateVideoRequest request) {
+        User user = assertAuthenticatedUser();
+        Video video = videoCreateUseCase.execute(request.getUploadId(), request.getFileName(), user);
+        return videoResponseMapper.toVideoResponse(video);
     }
 
     @GetMapping("/{id}")
     public VideoResponse get(@PathVariable Long id) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication.isAuthenticated()) {
-            User u = (User) authentication.getPrincipal();
-            Video video = videoGetUseCase.execute(id);
-            if (!Objects.equals(video.getCreatedBy(), u.getId()))
-                throw new NotFoundException();
 
-            return videoResponseMapper.toVideoResponse(video);
-        } else {
-            throw new UnauthorizedUserException("Usuário não autenticado");
+        User user = assertAuthenticatedUser();
+        Video video = videoGetUseCase.execute(id);
+
+        if (!Objects.equals(video.getCreatedBy(), user.getId())) {
+            throw new NotFoundException();
         }
+
+        return videoResponseMapper.toVideoResponse(video);
     }
 
     @GetMapping
     public List<VideoResponse> list() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication.isAuthenticated()) {
-            User u = (User) authentication.getPrincipal();
-            List<Video> videos = videoListUseCase.execute(u.getId());
-            return videos.stream().map(videoResponseMapper::toVideoResponse).toList();
-        } else {
-            throw new UnauthorizedUserException("Usuário não autenticado");
-        }
+        User user = assertAuthenticatedUser();
+        List<Video> videos = videoListUseCase.execute(user.getId());
+        return videos.stream().map(videoResponseMapper::toVideoResponse).toList();
     }
 
     @GetMapping("/{id}/thumbnail")
-    public ResponseEntity<InputStreamSource> thumbnailDownload(@PathVariable Long id) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication.isAuthenticated()) {
+    public ResponseEntity<Void> thumbnailDownload(@PathVariable Long id) {
 
-            User u = (User) authentication.getPrincipal();
-            Video video = videoGetUseCase.execute(id);
-            if (!Objects.equals(video.getCreatedBy(), u.getId()))
-                throw new NotFoundException();
+        User user = assertAuthenticatedUser();
+        Video video = videoGetUseCase.execute(id);
 
-            return ResponseEntity.ok()
-                    .header(HttpHeaders.CONTENT_DISPOSITION, ContentDisposition.attachment().filename("thumbnail.zip").build().toString())
-                    .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                    .body(thumbnailDownloadUseCase.execute(id));
-        } else {
-            throw new UnauthorizedUserException("Usuário não autenticado");
+        if (!Objects.equals(video.getCreatedBy(), user.getId())) {
+            throw new NotFoundException();
         }
+
+        String uri = thumbnailDownloadUseCase.execute(id);
+
+        return ResponseEntity.status(HttpStatus.SEE_OTHER).location(URI.create(uri)).build();
+    }
+
+    private User assertAuthenticatedUser() {
+        return User.builder()
+                .id(1L)
+                .email("admin@fiap.com")
+                .username("admin")
+                .build();
     }
 
     @GetMapping("/sendmail")

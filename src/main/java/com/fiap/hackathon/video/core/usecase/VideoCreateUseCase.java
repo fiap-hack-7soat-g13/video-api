@@ -2,15 +2,18 @@ package com.fiap.hackathon.video.core.usecase;
 
 import com.fiap.hackathon.video.app.adapter.output.queue.VideoReceivedDispatcher;
 import com.fiap.hackathon.video.app.adapter.output.storage.FileStorage;
+import com.fiap.hackathon.video.app.adapter.output.storage.Location;
+import com.fiap.hackathon.video.core.common.util.Files;
 import com.fiap.hackathon.video.core.domain.User;
 import com.fiap.hackathon.video.core.domain.Video;
 import com.fiap.hackathon.video.core.domain.VideoStatus;
 import com.fiap.hackathon.video.core.gateway.VideoGateway;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
+import java.nio.file.Path;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Service
 @AllArgsConstructor
@@ -20,24 +23,32 @@ public class VideoCreateUseCase {
     private final FileStorage fileStorage;
     private final VideoReceivedDispatcher videoReceivedDispatcher;
 
-    public Video execute(MultipartFile file, User user) {
+    public Video execute(UUID uploadId, String fileName, User user) {
 
-        Video video = new Video();
+        return Files.createTempDirAndExecute(tempDir -> {
 
-        video.setName(file.getOriginalFilename());
-        video.setSize(file.getSize());
-        video.setContentType(file.getContentType());
-        video.setStatus(VideoStatus.RECEIVED);
-        video.setCreatedAt(LocalDateTime.now());
-        video.setCreatedBy(user.getId());
+            Path target = tempDir.resolve(uploadId.toString());
 
-        Video savedVideo = videoGateway.save(video);
+            fileStorage.download(Location.UPLOAD, uploadId.toString(), target);
 
-        fileStorage.create(fileStorage.getVideoLocation(), savedVideo.getId().toString(), file);
+            Video video = new Video();
 
-        videoReceivedDispatcher.dispatch(savedVideo);
+            video.setName(fileName);
+            video.setSize(target.toFile().length());
+            video.setContentType(Files.detectContentType(target));
+            video.setStatus(VideoStatus.RECEIVED);
+            video.setCreatedAt(LocalDateTime.now());
+            video.setCreatedBy(user.getId());
+            video.setCreatedByEmail(user.getEmail());
 
-        return savedVideo;
+            Video savedVideo = videoGateway.save(video);
+
+            fileStorage.copy(Location.UPLOAD, uploadId.toString(), Location.VIDEO, savedVideo.getId().toString());
+
+            videoReceivedDispatcher.dispatch(savedVideo);
+
+            return savedVideo;
+        });
     }
 
 }
